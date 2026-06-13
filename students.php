@@ -18,8 +18,9 @@ $where_parts = [];
 $params = [];
 
 if (!empty($search)) {
-    $where_parts[] = "(full_name LIKE :search OR reg_number LIKE :search)";
-    $params['search'] = '%' . $search . '%';
+    $where_parts[] = "(full_name LIKE :search1 OR reg_number LIKE :search2)";
+    $params['search1'] = '%' . $search . '%';
+    $params['search2'] = '%' . $search . '%';
 }
 if (!empty($grade_filter)) {
     $where_parts[] = "class_grade = :grade";

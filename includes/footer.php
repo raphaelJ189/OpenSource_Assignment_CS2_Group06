@@ -33,6 +33,22 @@
                 localStorage.setItem('theme', target);
                 applyThemeIcons(target);
             });
+
+            // Handle Global Loader
+            window.addEventListener('load', () => {
+                const loader = document.getElementById('global-loader');
+                if (loader) {
+                    loader.classList.add('hidden');
+                }
+            });
+
+            // Optional: Show loader on form submit or page unload
+            window.addEventListener('beforeunload', () => {
+                const loader = document.getElementById('global-loader');
+                if (loader) {
+                    loader.classList.remove('hidden');
+                }
+            });
         })();
     </script>
 </body>
