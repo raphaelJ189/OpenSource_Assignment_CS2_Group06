@@ -6,13 +6,18 @@ require_once __DIR__ . '/includes/header.php';
 
 $student = null;
 $searched = false;
-$reg_no = strtoupper(trim($_GET['reg_no'] ?? $_POST['reg_no'] ?? ''));
+$reg_number = strtoupper(trim($_GET['reg_number'] ?? $_POST['reg_number'] ?? ''));
 
-if (!empty($reg_no)) {
+if (!empty($reg_number)) {
     $searched = true;
     try {
-        $stmt = $pdo->prepare("SELECT * FROM students WHERE reg_no = :reg_no");
-        $stmt->execute(['reg_no' => $reg_no]);
+        $stmt = $pdo->prepare("
+            SELECT s.*, u.full_name AS registered_by_name, u.username AS registered_by_username
+            FROM students s
+            LEFT JOIN users u ON s.registered_by = u.user_id
+            WHERE s.reg_number = :reg
+        ");
+        $stmt->execute(['reg' => $reg_number]);
         $student = $stmt->fetch();
     } catch (PDOException $e) {
         $student = null;
@@ -35,12 +40,12 @@ function age_from_dob($dob) {
 <div class="glass-card" style="padding: 32px; margin-bottom: 28px;">
     <form method="GET" action="search.php" style="display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap;">
         <div class="form-group" style="flex: 1; min-width: 260px; margin-bottom: 0;">
-            <label class="form-label" for="reg_no_input">Search by Registration Number</label>
+            <label class="form-label" for="reg_no_input">Search by Student Registration Number</label>
             <div class="search-box">
                 <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                <input id="reg_no_input" type="text" name="reg_no" class="form-input" 
-                       placeholder="e.g. REG/2026/0001"
-                       value="<?php echo htmlspecialchars($reg_no); ?>"
+                <input id="reg_no_input" type="text" name="reg_number" class="form-input" 
+                       placeholder="e.g. S4558/0001/2026"
+                       value="<?php echo htmlspecialchars($reg_number); ?>"
                        style="text-transform: uppercase;" autofocus>
             </div>
         </div>
@@ -48,7 +53,7 @@ function age_from_dob($dob) {
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
             Search
         </button>
-        <?php if (!empty($reg_no)): ?>
+        <?php if (!empty($reg_number)): ?>
             <a href="search.php" class="btn btn-secondary" style="height: 48px;">Clear</a>
         <?php endif; ?>
     </form>
@@ -70,84 +75,65 @@ function age_from_dob($dob) {
                     <div style="color: white;">
                         <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 6px;"><?php echo htmlspecialchars($student['full_name']); ?></h2>
                         <div style="display: flex; gap: 12px; flex-wrap: wrap; opacity: 0.9; font-size: 0.9rem;">
-                            <span>📋 <?php echo htmlspecialchars($student['reg_no']); ?></span>
-                            <span>🏫 <?php echo htmlspecialchars($student['school_level']); ?> School</span>
-                            <span>📍 <?php echo htmlspecialchars($student['region']); ?>, Tanzania</span>
+                            <span>📋 <?php echo htmlspecialchars($student['reg_number']); ?></span>
+                            <span>🏫 <?php echo htmlspecialchars($student['class_grade']); ?></span>
+                            <span>📆 Enrolled: <?php echo htmlspecialchars($student['enrolment_year']); ?></span>
                         </div>
-                    </div>
-                    <div style="margin-left: auto;">
-                        <span style="background: rgba(255,255,255,0.2); backdrop-filter: blur(8px); padding: 8px 16px; border-radius: 20px; color: white; font-weight: 600; font-size: 0.85rem;">
-                            ✓ <?php echo htmlspecialchars($student['status']); ?>
-                        </span>
                     </div>
                 </div>
             </div>
 
             <!-- Profile Details Grid -->
             <div style="padding: 36px 40px;">
-                <h3 style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 24px;">Student Information</h3>
+                <h3 style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 24px;">Student Profile Details</h3>
 
                 <div class="profile-grid" style="margin-bottom: 36px;">
                     <div class="profile-item">
                         <div class="profile-label">Registration Number</div>
                         <div class="profile-value">
-                            <span class="badge badge-primary" style="font-size: 1rem; padding: 6px 14px;"><?php echo htmlspecialchars($student['reg_no']); ?></span>
+                            <span class="badge badge-primary" style="font-size: 1rem; padding: 6px 14px;"><?php echo htmlspecialchars($student['reg_number']); ?></span>
                         </div>
                     </div>
+                    
                     <div class="profile-item">
                         <div class="profile-label">Full Name</div>
                         <div class="profile-value"><?php echo htmlspecialchars($student['full_name']); ?></div>
                     </div>
+                    
                     <div class="profile-item">
                         <div class="profile-label">Gender</div>
                         <div class="profile-value"><?php echo htmlspecialchars($student['gender']); ?></div>
                     </div>
+                    
                     <div class="profile-item">
                         <div class="profile-label">Date of Birth / Age</div>
                         <div class="profile-value">
-                            <?php echo htmlspecialchars($student['date_of_birth']); ?>
+                            <?php echo htmlspecialchars(date('d M Y', strtotime($student['date_of_birth']))); ?>
                             <span style="color: var(--text-muted); font-size: 0.85rem;"> (<?php echo age_from_dob($student['date_of_birth']); ?>)</span>
                         </div>
                     </div>
+                    
                     <div class="profile-item">
-                        <div class="profile-label">School Level</div>
+                        <div class="profile-label">Class / Grade</div>
+                        <div class="profile-value"><?php echo htmlspecialchars($student['class_grade']); ?></div>
+                    </div>
+                    
+                    <div class="profile-item">
+                        <div class="profile-label">Enrolment Year</div>
+                        <div class="profile-value"><?php echo htmlspecialchars($student['enrolment_year']); ?></div>
+                    </div>
+
+                    <div class="profile-item">
+                        <div class="profile-label">Registered By</div>
                         <div class="profile-value">
-                            <span class="badge <?php echo $student['school_level']==='Primary'?'badge-secondary':'badge-primary'; ?>">
-                                <?php echo htmlspecialchars($student['school_level']); ?>
-                            </span>
+                            <?php echo htmlspecialchars($student['registered_by_name'] ?? 'System'); ?> 
+                            <span style="color: var(--text-muted); font-size: 0.85rem;">(<?php echo htmlspecialchars($student['registered_by_username'] ?? 'admin'); ?>)</span>
                         </div>
                     </div>
-                    <div class="profile-item">
-                        <div class="profile-label">Grade / Form</div>
-                        <div class="profile-value"><?php echo htmlspecialchars($student['grade_level']); ?></div>
-                    </div>
-                    <div class="profile-item" style="grid-column: span 2;">
-                        <div class="profile-label">School Name</div>
-                        <div class="profile-value"><?php echo htmlspecialchars($student['school_name']); ?></div>
-                    </div>
-                </div>
 
-                <h3 style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 24px;">Location</h3>
-                <div class="profile-grid" style="margin-bottom: 36px;">
                     <div class="profile-item">
-                        <div class="profile-label">Region</div>
-                        <div class="profile-value">📍 <?php echo htmlspecialchars($student['region']); ?></div>
-                    </div>
-                    <div class="profile-item">
-                        <div class="profile-label">District</div>
-                        <div class="profile-value"><?php echo htmlspecialchars($student['district']); ?></div>
-                    </div>
-                </div>
-
-                <h3 style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 24px;">Guardian / Parent Details</h3>
-                <div class="profile-grid" style="margin-bottom: 36px;">
-                    <div class="profile-item">
-                        <div class="profile-label">Guardian Name</div>
-                        <div class="profile-value"><?php echo htmlspecialchars($student['guardian_name']); ?></div>
-                    </div>
-                    <div class="profile-item">
-                        <div class="profile-label">Guardian Phone</div>
-                        <div class="profile-value">📞 <?php echo htmlspecialchars($student['guardian_phone']); ?></div>
+                        <div class="profile-label">Registration Date</div>
+                        <div class="profile-value"><?php echo htmlspecialchars(date('d M Y, H:i', strtotime($student['created_at']))); ?></div>
                     </div>
                 </div>
 
@@ -156,9 +142,10 @@ function age_from_dob($dob) {
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
                         All Students
                     </a>
-                    <a href="register_student.php" class="btn btn-primary">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
-                        Register New Student
+                    
+                    <a href="edit_student.php?student_id=<?php echo urlencode($student['student_id']); ?>" class="btn btn-primary" style="background: var(--secondary); border-color: var(--secondary);">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                        Edit Student
                     </a>
                 </div>
             </div>
@@ -172,11 +159,11 @@ function age_from_dob($dob) {
                     <path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
             </div>
-            <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 8px;">Student Not Found</h2>
+            <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 8px; color: var(--text-primary);">No student found</h2>
             <p style="color: var(--text-muted); max-width: 420px; margin: 0 auto 28px; line-height: 1.6;">
-                No student record found with registration number
-                <strong style="color: var(--text-primary);"><?php echo htmlspecialchars($reg_no); ?></strong>.
-                Please check the number and try again, or browse the student directory.
+                No student record matches the registration number
+                <strong style="color: var(--text-primary);"><?php echo htmlspecialchars($reg_number); ?></strong>.
+                Verify format (e.g. S4558/0001/2026) or try browsing the directory.
             </p>
             <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
                 <a href="search.php" class="btn btn-secondary">Try Again</a>
@@ -193,9 +180,9 @@ function age_from_dob($dob) {
                 <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
             </svg>
         </div>
-        <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 8px;">Search Student Records</h2>
+        <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 8px; color: var(--text-primary);">Search Student Records</h2>
         <p style="color: var(--text-muted); max-width: 400px; margin: 0 auto;">
-            Enter a registration number above in the format <strong>REG/YYYY/XXXX</strong> to instantly retrieve a student's full profile from the system.
+            Enter a student registration number above (format: <strong>S4558/STNO/YEAR</strong>) to retrieve their full profile details.
         </p>
     </div>
 <?php endif; ?>
