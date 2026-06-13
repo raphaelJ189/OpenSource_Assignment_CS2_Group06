@@ -1,11 +1,9 @@
 ## Project Title
 Student Record Management System (SRMS) for Primary and Secondary School
 
-## Degree Program
-Computer Science (Bsc-CS2)
+## Project Overview
 
-## Group Number
-Group 06
+**MwalimuHub SIMS** is a web-based Student Information Management System designed for primary and secondary schools in Tanzania. Built as part of the Open Source Technologies (CP 222) coursework, the system enables school administrators to digitally manage student records, improving data accuracy, accessibility, and operational efficiency.
 
 ## Project Description
 This project is a PHP-based Student Record Management System designed to manage student records securely and efficiently.
