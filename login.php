@@ -12,6 +12,12 @@ if (is_logged_in()) {
 
 $error = '';
 
+// Check if redirect has error from auth.php
+if (isset($_SESSION['login_error'])) {
+    $error = $_SESSION['login_error'];
+    unset($_SESSION['login_error']);
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
@@ -20,21 +26,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Please enter both username and password.';
     } else {
         try {
+            // Retrieve user from DB
             $stmt = $pdo->prepare("SELECT * FROM users WHERE username = :username");
             $stmt->execute(['username' => $username]);
             $user = $stmt->fetch();
 
-            if ($user && password_verify($password, $user['password'])) {
-                // Regenerate session ID for security (prevents session fixation)
-                session_regenerate_id(true);
-                
-                $_SESSION['user_id'] = $user['id'];
-                $_SESSION['username'] = $user['username'];
-                $_SESSION['role'] = $user['role'];
+            // Check password and status (BR-05: blocked if is_active is 0)
+            if ($user && password_verify($password, $user['password_hash'])) {
+                if ((int)$user['is_active'] === 1) {
+                    // Regenerate session ID for security (prevents session fixation)
+                    session_regenerate_id(true);
+                    
+                    $_SESSION['user_id'] = $user['user_id'];
+                    $_SESSION['username'] = $user['username'];
+                    $_SESSION['role'] = $user['role'];
+                    $_SESSION['full_name'] = $user['full_name'];
 
-                header("Location: index.php");
-                exit();
+                    header("Location: index.php");
+                    exit();
+                } else {
+                    // Generic error to avoid revealing account status
+                    $error = 'Invalid username or password.';
+                }
             } else {
+                // Generic error to avoid username enumeration
                 $error = 'Invalid username or password.';
             }
         } catch (PDOException $e) {
@@ -48,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - School Information Management System</title>
+    <title>Login - Student Record Management System (SRMS)</title>
     <link rel="stylesheet" href="css/style.css">
     <script>
         // Apply saved theme early to prevent flash
@@ -60,9 +75,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <div class="login-card glass-card animate-fade-in">
         <div class="login-header">
-            <div class="logo-icon">SIMS</div>
-            <h2 class="logo-text" style="display: block; font-size: 1.6rem; margin-bottom: 8px;">MwalimuHub SIMS</h2>
-            <p>Student Information Management System</p>
+            <div class="logo-icon">SRMS</div>
+            <h2 class="logo-text" style="display: block; font-size: 1.6rem; margin-bottom: 8px;">SRMS</h2>
+            <p>Student Record Management System</p>
         </div>
 
         <?php if (!empty($error)): ?>
@@ -96,7 +111,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </form>
         
         <div style="text-align: center; margin-top: 24px; font-size: 0.8rem; color: var(--text-muted);">
-            Tanzania School Information Management System &copy; <?php echo date('Y'); ?>
+            Student Record Management System &copy; <?php echo date('Y'); ?>
         </div>
     </div>
 

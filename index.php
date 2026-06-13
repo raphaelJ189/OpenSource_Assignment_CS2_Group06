@@ -9,18 +9,21 @@ try {
     // 1. Total Students
     $total_students = $pdo->query("SELECT COUNT(*) FROM students")->fetchColumn();
 
-    // 2. Primary Level Students
-    $primary_students = $pdo->query("SELECT COUNT(*) FROM students WHERE school_level = 'Primary'")->fetchColumn();
+    // 2. Total Teachers
+    $total_teachers = $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'teacher'")->fetchColumn();
 
-    // 3. Secondary Level Students
-    $secondary_students = $pdo->query("SELECT COUNT(*) FROM students WHERE school_level = 'Secondary'")->fetchColumn();
+    // 3. Registered This Year
+    $current_year = date('Y');
+    $stmt_year = $pdo->prepare("SELECT COUNT(*) FROM students WHERE enrolment_year = :year");
+    $stmt_year->execute(['year' => $current_year]);
+    $students_this_year = $stmt_year->fetchColumn();
 
     // 4. Gender Counts
     $male_students = $pdo->query("SELECT COUNT(*) FROM students WHERE gender = 'Male'")->fetchColumn();
     $female_students = $pdo->query("SELECT COUNT(*) FROM students WHERE gender = 'Female'")->fetchColumn();
 
     // 5. Recent 5 registrations
-    $recent_students = $pdo->query("SELECT * FROM students ORDER BY id DESC LIMIT 5")->fetchAll();
+    $recent_students = $pdo->query("SELECT * FROM students ORDER BY student_id DESC LIMIT 5")->fetchAll();
 
 } catch (PDOException $e) {
     die("Error fetching dashboard statistics: " . $e->getMessage());
@@ -39,26 +42,26 @@ try {
         <div class="stats-value"><?php echo number_format($total_students); ?></div>
     </div>
 
-    <!-- Card 2: Primary Level -->
+    <!-- Card 2: Total Teachers -->
     <div class="glass-card stats-card">
         <div class="stats-icon secondary">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
         </div>
-        <div class="stats-label">Primary School Level</div>
-        <div class="stats-value"><?php echo number_format($primary_students); ?></div>
+        <div class="stats-label">Active Teachers</div>
+        <div class="stats-value"><?php echo number_format($total_teachers); ?></div>
     </div>
 
-    <!-- Card 3: Secondary Level -->
+    <!-- Card 3: Registered This Year -->
     <div class="glass-card stats-card">
         <div class="stats-icon accent">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
         </div>
-        <div class="stats-label">Secondary School Level</div>
-        <div class="stats-value"><?php echo number_format($secondary_students); ?></div>
+        <div class="stats-label">Enrolled in <?php echo $current_year; ?></div>
+        <div class="stats-value"><?php echo number_format($students_this_year); ?></div>
     </div>
 </div>
 
@@ -84,23 +87,23 @@ try {
                         <tr>
                             <th>Reg No</th>
                             <th>Full Name</th>
-                            <th>School Level</th>
-                            <th>Grade</th>
-                            <th>Status</th>
+                            <th>Class/Grade</th>
+                            <th>Gender</th>
+                            <th>Enrolment Year</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php foreach($recent_students as $student): ?>
                             <tr>
-                                <td><span class="badge badge-primary"><?php echo htmlspecialchars($student['reg_no']); ?></span></td>
+                                <td><span class="badge badge-primary"><?php echo htmlspecialchars($student['reg_number']); ?></span></td>
                                 <td style="font-weight: 500;"><?php echo htmlspecialchars($student['full_name']); ?></td>
+                                <td><?php echo htmlspecialchars($student['class_grade']); ?></td>
                                 <td>
-                                    <span class="badge <?php echo $student['school_level'] === 'Primary' ? 'badge-secondary' : 'badge-primary'; ?>">
-                                        <?php echo htmlspecialchars($student['school_level']); ?>
+                                    <span class="badge <?php echo $student['gender'] === 'Male' ? 'badge-secondary' : 'badge-primary'; ?>">
+                                        <?php echo htmlspecialchars($student['gender']); ?>
                                     </span>
                                 </td>
-                                <td><?php echo htmlspecialchars($student['grade_level']); ?></td>
-                                <td><span class="badge badge-active"><?php echo htmlspecialchars($student['status']); ?></span></td>
+                                <td><?php echo htmlspecialchars($student['enrolment_year']); ?></td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
@@ -148,7 +151,7 @@ try {
         </div>
 
         <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 0.85rem; color: var(--text-muted); line-height: 1.4;">
-            <p><strong>System Note:</strong> Ensure all primary school data is verified against the NECTA Standard VII census, and secondary school records align with Form IV registration profiles.</p>
+            <p><strong>System Note:</strong> Ensure all registration formats conform to the standard configuration format: S + School Number + / + Sequential Number + / + Enrolment Year.</p>
         </div>
     </div>
 </div>
