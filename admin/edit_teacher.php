@@ -106,73 +106,153 @@ require_once __DIR__ . '/../includes/header.php';
 ?>
 
 <?php if (!empty($success)): ?>
-    <div class="alert alert-success" style="margin-bottom: 24px;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        <span><?php echo $success; ?></span>
-    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            window.SRMS.notify(<?php echo json_encode($success); ?>, 'success', 'Account Updated');
+        });
+    </script>
 <?php endif; ?>
 
 <?php if (!empty($error)): ?>
-    <div class="alert alert-danger" style="margin-bottom: 24px;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        <span><?php echo $error; ?></span>
-    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            window.SRMS.notify(<?php echo json_encode($error); ?>, 'danger', 'Update Failed');
+        });
+    </script>
 <?php endif; ?>
 
-<div class="glass-card" style="padding: 36px; max-width: 700px; margin: 0 auto;">
-    <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--border-color);">
-        <div class="stats-icon primary" style="margin-bottom: 0;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
-        </div>
-        <div>
-            <h2 style="font-size: 1.2rem; font-weight: 600;">Manage Teacher Account</h2>
-            <p style="font-size: 0.9rem; color: var(--text-muted);">Edit account profile, reset password, or toggle activation status for <?php echo htmlspecialchars($teacher['full_name']); ?>.</p>
+<div class="glass-card animate-fade-in-up" style="max-width: 700px; margin: 0 auto;">
+    <div class="card-header">
+        <div class="card-header-inner">
+            <div class="card-icon primary">
+                <i class="fa-solid fa-user-gear"></i>
+            </div>
+            <div>
+                <h2 class="card-title">Manage Teacher Account</h2>
+                <p class="card-subtitle">Edit account profile, reset password, or toggle activation status for <?php echo htmlspecialchars($teacher['full_name']); ?>.</p>
+            </div>
         </div>
     </div>
 
-    <form method="POST" action="edit_teacher.php?user_id=<?php echo urlencode($user_id); ?>" autocomplete="off" novalidate>
-        <h3 style="font-size: 0.8rem; font-weight: 600; margin-bottom: 20px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Teacher Identification</h3>
-        
-        <div class="form-grid" style="margin-bottom: 32px;">
-            <div class="form-group" style="grid-column: span 2;">
-                <label class="form-label" for="full_name">Full Name *</label>
-                <input type="text" id="full_name" name="full_name" class="form-input" placeholder="e.g. John Doe Mwalimu" value="<?php echo htmlspecialchars($teacher['full_name']); ?>" required>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label" for="username">Username *</label>
-                <input type="text" id="username" name="username" class="form-input" placeholder="e.g. johndoe" value="<?php echo htmlspecialchars($teacher['username']); ?>" required>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label" for="password">Password (leave blank to keep current)</label>
-                <input type="password" id="password" name="password" class="form-input" placeholder="••••••••">
-            </div>
-        </div>
+    <div class="card-body">
+        <form method="POST" action="edit_teacher.php?user_id=<?php echo urlencode($user_id); ?>" autocomplete="off" novalidate id="edit-teacher-form">
+            <fieldset class="form-section">
+                <legend class="form-section-title">
+                    <i class="fa-solid fa-id-card"></i> Teacher Identification
+                </legend>
+                
+                <div class="form-grid">
+                    <div class="form-group col-span-2">
+                        <label class="form-label" for="full_name">
+                            Full Name <span class="required-dot">*</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <span class="input-icon left"><i class="fa-solid fa-user"></i></span>
+                            <input type="text" id="full_name" name="full_name" class="form-input has-icon-left" placeholder="e.g. John Doe Mwalimu" value="<?php echo htmlspecialchars($teacher['full_name']); ?>" required>
+                        </div>
+                        <div class="form-error" id="error-full_name"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="username">
+                            Username <span class="required-dot">*</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <span class="input-icon left"><i class="fa-solid fa-user-gear"></i></span>
+                            <input type="text" id="username" name="username" class="form-input has-icon-left" placeholder="e.g. johndoe" value="<?php echo htmlspecialchars($teacher['username']); ?>" required autocomplete="off">
+                        </div>
+                        <div class="form-error" id="error-username"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="password">
+                            Password (leave blank to keep current)
+                        </label>
+                        <div class="input-wrapper">
+                            <span class="input-icon left"><i class="fa-solid fa-lock"></i></span>
+                            <input type="password" id="password" name="password" class="form-input has-icon-left" placeholder="••••••••">
+                        </div>
+                        <div class="form-error" id="error-password"></div>
+                    </div>
+                </div>
+            </fieldset>
 
-        <h3 style="font-size: 0.8rem; font-weight: 600; margin-bottom: 20px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Account Status</h3>
-        
-        <div style="background-color: var(--primary-light); padding: 20px; border-radius: 12px; margin-bottom: 32px; display: flex; align-items: center; justify-content: space-between;">
-            <div>
-                <strong style="display: block; font-size: 0.95rem; color: var(--text-primary);">Account Active Status</strong>
-                <span style="font-size: 0.8rem; color: var(--text-muted);">Deactivated teachers will be blocked from logging in immediately.</span>
-            </div>
-            <div>
-                <label class="form-label" style="display: inline-flex; align-items: center; gap: 8px; margin-bottom: 0; cursor: pointer;">
-                    <input type="checkbox" name="is_active" value="1" <?php echo ((int)$teacher['is_active'] === 1) ? 'checked' : ''; ?> style="width: 20px; height: 20px; cursor: pointer;">
-                    <span style="font-weight: 600; font-size: 0.95rem;">Active</span>
-                </label>
-            </div>
-        </div>
+            <fieldset class="form-section">
+                <legend class="form-section-title">
+                    <i class="fa-solid fa-shield-halved"></i> Account Status
+                </legend>
+                
+                <div class="status-toggle-card">
+                    <div class="status-toggle-info">
+                        <strong class="status-toggle-title">Account Active Status</strong>
+                        <span class="status-toggle-desc">Deactivated teachers will be blocked from logging in immediately.</span>
+                    </div>
+                    <div class="status-toggle-action">
+                        <label class="switch-container">
+                            <input type="checkbox" name="is_active" value="1" <?php echo ((int)$teacher['is_active'] === 1) ? 'checked' : ''; ?> class="switch-input">
+                            <span class="switch-slider"></span>
+                        </label>
+                        <span class="switch-label-text">Active</span>
+                    </div>
+                </div>
+            </fieldset>
 
-        <div style="display: flex; gap: 16px; justify-content: flex-end;">
-            <a href="dashboard.php" class="btn btn-secondary">Cancel</a>
-            <button type="submit" class="btn btn-primary">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                Save Updates
-            </button>
-        </div>
-    </form>
+            <div class="form-actions">
+                <a href="dashboard.php" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-floppy-disk"></i>
+                    <span>Save Updates</span>
+                </button>
+            </div>
+        </form>
+    </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('edit-teacher-form');
+    const fullName = document.getElementById('full_name');
+    const username = document.getElementById('username');
+    const password = document.getElementById('password');
+
+    form.addEventListener('submit', (e) => {
+        let valid = true;
+
+        // Reset errors
+        document.querySelectorAll('.form-error').forEach(d => d.textContent = '');
+        document.querySelectorAll('.form-input').forEach(i => i.classList.remove('is-invalid'));
+
+        // Validate Full Name
+        if (!window.SRMS.validate.required(fullName)) {
+            fullName.classList.add('is-invalid');
+            document.getElementById('error-full_name').textContent = 'Full name is required.';
+            valid = false;
+        }
+
+        // Validate Username
+        if (!window.SRMS.validate.required(username)) {
+            username.classList.add('is-invalid');
+            document.getElementById('error-username').textContent = 'Username is required.';
+            valid = false;
+        } else if (!window.SRMS.validate.minLength(username, 3)) {
+            username.classList.add('is-invalid');
+            document.getElementById('error-username').textContent = 'Username must be at least 3 characters.';
+            valid = false;
+        }
+
+        // Validate Password (only if filled)
+        if (password.value.length > 0 && !window.SRMS.validate.minLength(password, 6)) {
+            password.classList.add('is-invalid');
+            document.getElementById('error-password').textContent = 'Password must be at least 6 characters.';
+            valid = false;
+        }
+
+        if (!valid) {
+            e.preventDefault();
+            window.SRMS.notify('Please correct the validation errors on the form.', 'warning', 'Validation Warning');
+        }
+    });
+});
+</script>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>
