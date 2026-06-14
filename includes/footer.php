@@ -1,40 +1,127 @@
 <?php
-// includes/footer.php - Global footer containing javascript behavior for theme toggling
+// includes/footer.php - Global footer containing javascript behaviors
 
 ?>
-            </div> <!-- End of fade-in animations wrapper -->
+            </div> <!-- End of content-wrapper -->
         </main>
-    </div> <!-- End of main layout wrapper -->
+    </div> <!-- End of layout-wrapper -->
 
-    <!-- Theme management script -->
+    <!-- Toast Notifications Container -->
+    <div id="toast-container"></div>
+
+    <!-- Unified JavaScript Framework -->
     <script>
         (function() {
-            const themeBtn = document.getElementById('theme-toggle-btn');
-            const sunIcon = document.getElementById('theme-sun-icon');
-            const moonIcon = document.getElementById('theme-moon-icon');
+            // Namespace initialization
+            window.SRMS = window.SRMS || {};
 
-            function applyThemeIcons(theme) {
-                if (theme === 'dark') {
-                    sunIcon.style.display = 'block';
-                    moonIcon.style.display = 'none';
-                } else {
-                    sunIcon.style.display = 'none';
-                    moonIcon.style.display = 'block';
+            // 1. Toast Notification System
+            window.SRMS.notify = function(message, type = 'info', title = '') {
+                let container = document.getElementById('toast-container');
+                if (!container) {
+                    container = document.createElement('div');
+                    container.id = 'toast-container';
+                    document.body.appendChild(container);
                 }
-            }
 
-            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
-            applyThemeIcons(currentTheme);
+                const toast = document.createElement('div');
+                toast.className = `toast toast-${type}`;
 
-            themeBtn.addEventListener('click', () => {
-                const current = document.documentElement.getAttribute('data-theme');
-                const target = current === 'dark' ? 'light' : 'dark';
-                document.documentElement.setAttribute('data-theme', target);
-                localStorage.setItem('theme', target);
-                applyThemeIcons(target);
-            });
+                let iconClass = 'fa-circle-info';
+                if (type === 'success') iconClass = 'fa-circle-check';
+                else if (type === 'danger') iconClass = 'fa-circle-xmark';
+                else if (type === 'warning') iconClass = 'fa-triangle-exclamation';
 
-            // Handle Global Loader
+                if (!title) {
+                    title = type.charAt(0).toUpperCase() + type.slice(1);
+                }
+
+                toast.innerHTML = `
+                    <div class="toast-icon"><i class="fa-solid ${iconClass}"></i></div>
+                    <div class="toast-body">
+                        <div class="toast-title">${title}</div>
+                        <div class="toast-msg">${message}</div>
+                    </div>
+                    <button type="button" class="toast-close" aria-label="Close toast">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                `;
+
+                container.appendChild(toast);
+
+                const dismiss = () => {
+                    if (toast.classList.contains('toast-hiding')) return;
+                    toast.classList.add('toast-hiding');
+                    toast.addEventListener('animationend', () => {
+                        toast.remove();
+                    });
+                };
+
+                const closeBtn = toast.querySelector('.toast-close');
+                closeBtn.addEventListener('click', dismiss);
+
+                // Auto-dismiss after 5 seconds
+                setTimeout(dismiss, 5000);
+            };
+
+            // 2. Custom Confirmation Modal System
+            window.SRMS.confirm = function({ title, desc, onConfirm }) {
+                // Remove existing modal if any
+                const existing = document.getElementById('global-modal-overlay');
+                if (existing) existing.remove();
+
+                const overlay = document.createElement('div');
+                overlay.id = 'global-modal-overlay';
+                overlay.className = 'modal-overlay';
+                overlay.innerHTML = `
+                    <div class="modal-dialog">
+                        <div class="modal-header">
+                            <div class="modal-icon danger">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                            </div>
+                            <h3 class="modal-title">${title}</h3>
+                            <p class="modal-desc">${desc}</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" id="modal-cancel-btn">Cancel</button>
+                            <button type="button" class="btn btn-primary" id="modal-confirm-btn" style="background: var(--color-danger); border-color: var(--color-danger);">Delete</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(overlay);
+
+                const cancelBtn = overlay.querySelector('#modal-cancel-btn');
+                const confirmBtn = overlay.querySelector('#modal-confirm-btn');
+
+                const close = () => {
+                    overlay.remove();
+                };
+
+                cancelBtn.addEventListener('click', close);
+                overlay.addEventListener('click', (e) => {
+                    if (e.target === overlay) close();
+                });
+
+                confirmBtn.addEventListener('click', () => {
+                    onConfirm();
+                    close();
+                });
+            };
+
+            // 3. Client-side validation helper
+            window.SRMS.validate = {
+                required: (input) => {
+                    return input.value.trim() !== '';
+                },
+                minLength: (input, len) => {
+                    return input.value.trim().length >= len;
+                },
+                pattern: (input, regex) => {
+                    return regex.test(input.value.trim());
+                }
+            };
+
+            // 4. Page Loader control
             window.addEventListener('load', () => {
                 const loader = document.getElementById('global-loader');
                 if (loader) {
@@ -42,11 +129,98 @@
                 }
             });
 
-            // Optional: Show loader on form submit or page unload
-            window.addEventListener('beforeunload', () => {
-                const loader = document.getElementById('global-loader');
-                if (loader) {
-                    loader.classList.remove('hidden');
+            // 5. Theme Toggle Logic
+            const themeBtn = document.getElementById('theme-toggle-btn');
+            const sunIcon = document.getElementById('theme-sun-icon');
+            const moonIcon = document.getElementById('theme-moon-icon');
+
+            function applyThemeIcons(theme) {
+                if (theme === 'dark') {
+                    if (sunIcon) sunIcon.style.display = 'inline-block';
+                    if (moonIcon) moonIcon.style.display = 'none';
+                } else {
+                    if (sunIcon) sunIcon.style.display = 'none';
+                    if (moonIcon) moonIcon.style.display = 'inline-block';
+                }
+            }
+
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            applyThemeIcons(currentTheme);
+
+            if (themeBtn) {
+                themeBtn.addEventListener('click', () => {
+                    const current = document.documentElement.getAttribute('data-theme');
+                    const target = current === 'dark' ? 'light' : 'dark';
+                    document.documentElement.setAttribute('data-theme', target);
+                    localStorage.setItem('theme', target);
+                    applyThemeIcons(target);
+                });
+            }
+
+            // 6. Responsive Sidebar controls
+            const sidebarToggle = document.getElementById('sidebar-toggle');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+            if (sidebarToggle && sidebar) {
+                sidebarToggle.addEventListener('click', () => {
+                    sidebar.classList.toggle('is-open');
+                    if (sidebarOverlay) {
+                        sidebarOverlay.classList.toggle('active');
+                    }
+                });
+            }
+
+            if (sidebarOverlay) {
+                sidebarOverlay.addEventListener('click', () => {
+                    if (sidebar) sidebar.classList.remove('is-open');
+                    sidebarOverlay.classList.remove('active');
+                });
+            }
+
+            // 7. Auto-dismiss alerts after 5 seconds
+            document.querySelectorAll('.alert').forEach(alert => {
+                setTimeout(() => {
+                    alert.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                    alert.style.opacity = '0';
+                    alert.style.transform = 'translateY(-10px)';
+                    setTimeout(() => alert.remove(), 500);
+                }, 5000);
+            });
+
+            // 8. Keyboard shortcut (Ctrl+K) to focus search
+            document.addEventListener('keydown', (e) => {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                    e.preventDefault();
+                    const searchInput = document.getElementById('search-input');
+                    if (searchInput) {
+                        searchInput.focus();
+                        searchInput.select();
+                    }
+                }
+            });
+
+            // 9. Intercept student delete actions to trigger the modal confirmation
+            document.addEventListener('click', (e) => {
+                const deleteLink = e.target.closest('.js-confirm-delete');
+                if (deleteLink) {
+                    e.preventDefault();
+                    const studentId = deleteLink.dataset.studentId;
+                    const studentName = deleteLink.dataset.studentName || 'this student';
+                    const deleteUrl = deleteLink.getAttribute('href');
+
+                    window.SRMS.confirm({
+                        title: 'Confirm Deletion',
+                        desc: `Are you sure you want to permanently delete the student record for <strong>${studentName}</strong>? This action cannot be undone.`,
+                        onConfirm: () => {
+                            // Convert the action into a secure POST delete
+                            const form = document.createElement('form');
+                            form.method = 'POST';
+                            form.action = deleteUrl;
+                            document.body.appendChild(form);
+                            form.submit();
+                        }
+                    });
                 }
             });
         })();

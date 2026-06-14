@@ -44,26 +44,30 @@ function age_from_dob($dob) {
 }
 ?>
 
-<!-- Search Form -->
-<div class="glass-card" style="padding: 32px; margin-bottom: 28px;">
-    <form method="GET" action="search.php" style="display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap;">
-        <div class="form-group" style="flex: 1; min-width: 260px; margin-bottom: 0;">
-            <label class="form-label" for="reg_no_input">Search by Name or Registration Number</label>
-            <div class="search-box">
-                <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                <input id="reg_no_input" type="text" name="reg_number" class="form-input" 
-                       placeholder="e.g. S4558/0001/2026 or John Doe"
-                       value="<?php echo htmlspecialchars($search_query); ?>" autofocus>
+<div class="glass-card animate-fade-in-up" style="margin-bottom: 28px;">
+    <div class="card-body">
+        <form method="GET" action="search.php" class="search-form-row">
+            <div class="form-group search-input-group">
+                <label class="form-label" for="search-input">Search by Name or Registration Number</label>
+                <div class="input-wrapper">
+                    <span class="input-icon left"><i class="fa-solid fa-magnifying-glass"></i></span>
+                    <input id="search-input" type="text" name="reg_number" class="form-input has-icon-left" 
+                           placeholder="e.g. S4558/0001/2026 or John Doe"
+                           value="<?php echo htmlspecialchars($search_query); ?>" autofocus autocomplete="off">
+                </div>
+                <div class="form-hint" style="margin-top: 4px;">Press <kbd>Enter</kbd> to search <span class="shortcut-hint">or use shortcut <kbd>Ctrl</kbd>+<kbd>K</kbd> to focus</span>.</div>
             </div>
-        </div>
-        <button type="submit" class="btn btn-primary" style="height: 48px;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-            Search
-        </button>
-        <?php if (!empty($search_query)): ?>
-            <a href="search.php" class="btn btn-secondary" style="height: 48px;">Clear</a>
-        <?php endif; ?>
-    </form>
+            <div class="search-form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-magnifying-glass fa-sm"></i>
+                    Search
+                </button>
+                <?php if (!empty($search_query)): ?>
+                    <a href="search.php" class="btn btn-secondary">Clear</a>
+                <?php endif; ?>
+            </div>
+        </form>
+    </div>
 </div>
 
 <!-- Result Card -->
@@ -73,87 +77,91 @@ function age_from_dob($dob) {
         <!-- Student Found: Profile Card -->
         <div class="glass-card animate-fade-in" style="overflow: hidden;">
             <!-- Profile Header Banner -->
-            <div style="background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); padding: 36px 40px; position: relative; overflow: hidden;">
-                <div style="position: absolute; right: -40px; top: -40px; width: 200px; height: 200px; border-radius: 50%; background: rgba(255,255,255,0.08);"></div>
-                <div style="position: absolute; right: 40px; bottom: -60px; width: 160px; height: 160px; border-radius: 50%; background: rgba(255,255,255,0.06);"></div>
-                <div style="position: relative; display: flex; align-items: center; gap: 24px;">
-                    <div style="width: 80px; height: 80px; border-radius: 20px; background: rgba(255,255,255,0.2); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 700; color: white; flex-shrink: 0;">
+            <div class="profile-banner">
+                <div class="profile-banner-inner">
+                    <div class="profile-initials">
                         <?php echo strtoupper(substr($student['full_name'], 0, 2)); ?>
                     </div>
-                    <div style="color: white;">
-                        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 6px;"><?php echo htmlspecialchars($student['full_name']); ?></h2>
-                        <div style="display: flex; gap: 12px; flex-wrap: wrap; opacity: 0.9; font-size: 0.9rem;">
-                            <span>📋 <?php echo htmlspecialchars($student['reg_number']); ?></span>
-                            <span>🏫 <?php echo htmlspecialchars($student['class_grade']); ?></span>
-                            <span>📆 Enrolled: <?php echo htmlspecialchars($student['enrolment_year']); ?></span>
+                    <div class="profile-banner-text">
+                        <h2><?php echo htmlspecialchars($student['full_name']); ?></h2>
+                        <div class="profile-banner-meta">
+                            <span><i class="fa-solid fa-id-badge"></i> <?php echo htmlspecialchars($student['reg_number']); ?></span>
+                            <span><i class="fa-solid fa-school"></i> <?php echo htmlspecialchars($student['class_grade']); ?></span>
+                            <span><i class="fa-solid fa-calendar-check"></i> Enrolled: <?php echo htmlspecialchars($student['enrolment_year']); ?></span>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Profile Details Grid -->
-            <div style="padding: 36px 40px;">
-                <h3 style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 24px;">Student Profile Details</h3>
+            <div class="profile-details-body">
+                <h3 class="profile-section-title">
+                    <i class="fa-solid fa-user-tag"></i> Student Profile Details
+                </h3>
 
-                <div class="profile-grid" style="margin-bottom: 36px;">
+                <div class="profile-grid">
                     <div class="profile-item">
-                        <div class="profile-label">Registration Number</div>
-                        <div class="profile-value">
-                            <span class="badge badge-primary" style="font-size: 1rem; padding: 6px 14px;"><?php echo htmlspecialchars($student['reg_number']); ?></span>
+                        <div class="profile-item-label"><i class="fa-solid fa-fingerprint"></i> Registration Number</div>
+                        <div class="profile-item-value">
+                            <span class="badge badge-primary"><?php echo htmlspecialchars($student['reg_number']); ?></span>
                         </div>
                     </div>
                     
                     <div class="profile-item">
-                        <div class="profile-label">Full Name</div>
-                        <div class="profile-value"><?php echo htmlspecialchars($student['full_name']); ?></div>
+                        <div class="profile-item-label"><i class="fa-solid fa-id-card"></i> Full Name</div>
+                        <div class="profile-item-value"><?php echo htmlspecialchars($student['full_name']); ?></div>
                     </div>
                     
                     <div class="profile-item">
-                        <div class="profile-label">Gender</div>
-                        <div class="profile-value"><?php echo htmlspecialchars($student['gender']); ?></div>
+                        <div class="profile-item-label"><i class="fa-solid fa-venus-mars"></i> Gender</div>
+                        <div class="profile-item-value">
+                            <span class="badge <?php echo $student['gender']==='Male'?'badge-secondary':'badge-primary'; ?>">
+                                <?php echo htmlspecialchars($student['gender']); ?>
+                            </span>
+                        </div>
                     </div>
                     
                     <div class="profile-item">
-                        <div class="profile-label">Date of Birth / Age</div>
-                        <div class="profile-value">
+                        <div class="profile-item-label"><i class="fa-solid fa-cake-candles"></i> Date of Birth / Age</div>
+                        <div class="profile-item-value">
                             <?php echo htmlspecialchars(date('d M Y', strtotime($student['date_of_birth']))); ?>
                             <span style="color: var(--text-muted); font-size: 0.85rem;"> (<?php echo age_from_dob($student['date_of_birth']); ?>)</span>
                         </div>
                     </div>
                     
                     <div class="profile-item">
-                        <div class="profile-label">Class / Grade</div>
-                        <div class="profile-value"><?php echo htmlspecialchars($student['class_grade']); ?></div>
+                        <div class="profile-item-label"><i class="fa-solid fa-school"></i> Class / Grade</div>
+                        <div class="profile-item-value"><?php echo htmlspecialchars($student['class_grade']); ?></div>
                     </div>
                     
                     <div class="profile-item">
-                        <div class="profile-label">Enrolment Year</div>
-                        <div class="profile-value"><?php echo htmlspecialchars($student['enrolment_year']); ?></div>
+                        <div class="profile-item-label"><i class="fa-solid fa-calendar"></i> Enrolment Year</div>
+                        <div class="profile-item-value"><?php echo htmlspecialchars($student['enrolment_year']); ?></div>
                     </div>
 
                     <div class="profile-item">
-                        <div class="profile-label">Registered By</div>
-                        <div class="profile-value">
+                        <div class="profile-item-label"><i class="fa-solid fa-user-check"></i> Registered By</div>
+                        <div class="profile-item-value">
                             <?php echo htmlspecialchars($student['registered_by_name'] ?? 'System'); ?> 
                             <span style="color: var(--text-muted); font-size: 0.85rem;">(<?php echo htmlspecialchars($student['registered_by_username'] ?? 'admin'); ?>)</span>
                         </div>
                     </div>
 
                     <div class="profile-item">
-                        <div class="profile-label">Registration Date</div>
-                        <div class="profile-value"><?php echo htmlspecialchars(date('d M Y, H:i', strtotime($student['created_at']))); ?></div>
+                        <div class="profile-item-label"><i class="fa-solid fa-clock"></i> Registration Date</div>
+                        <div class="profile-item-value"><?php echo htmlspecialchars(date('d M Y, H:i', strtotime($student['created_at']))); ?></div>
                     </div>
                 </div>
 
-                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <div class="form-actions" style="border-top: 1px solid var(--border-default); margin-top: 0; padding-top: var(--sp-6);">
                     <a href="students.php" class="btn btn-secondary">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
-                        All Students
+                        <i class="fa-solid fa-users"></i>
+                        <span>All Students</span>
                     </a>
                     
-                    <a href="edit_student.php?student_id=<?php echo urlencode($student['student_id']); ?>" class="btn btn-primary" style="background: var(--secondary); border-color: var(--secondary);">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
-                        Edit Student
+                    <a href="edit_student.php?student_id=<?php echo urlencode($student['student_id']); ?>" class="btn btn-primary" style="background: var(--color-secondary); border-color: var(--color-secondary);">
+                        <i class="fa-solid fa-user-pen"></i>
+                        <span>Edit Student</span>
                     </a>
                 </div>
             </div>
@@ -161,67 +169,83 @@ function age_from_dob($dob) {
 
     <?php elseif (count($students_found) > 1): ?>
         <!-- Multiple Students Found -->
-        <div class="glass-card animate-fade-in" style="padding: 32px;">
-            <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 24px;">Multiple students found</h2>
-            <div class="table-container">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Reg Number</th>
-                            <th>Full Name</th>
-                            <th>Class/Grade</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($students_found as $s): ?>
-                        <tr>
-                            <td><span class="badge badge-primary"><?php echo htmlspecialchars($s['reg_number']); ?></span></td>
-                            <td style="font-weight: 600;"><?php echo htmlspecialchars($s['full_name']); ?></td>
-                            <td><?php echo htmlspecialchars($s['class_grade']); ?></td>
-                            <td>
-                                <a href="search.php?reg_number=<?php echo urlencode($s['reg_number']); ?>" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;">View Profile</a>
-                            </td>
-                        </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+        <div class="glass-card animate-fade-in">
+            <div class="card-header">
+                <div class="card-header-inner">
+                    <div class="card-icon primary">
+                        <i class="fa-solid fa-users-viewfinder"></i>
+                    </div>
+                    <div>
+                        <h2 class="card-title">Multiple Students Found</h2>
+                        <p class="card-subtitle">Multiple records matched your search query. Please select one to view.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body" style="padding: 0;">
+                <div class="table-container">
+                    <table class="data-table">
+                        <caption>Search results matches</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Reg Number</th>
+                                <th scope="col">Full Name</th>
+                                <th scope="col">Class/Grade</th>
+                                <th scope="col" style="text-align: right; width: 180px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($students_found as $s): ?>
+                            <tr>
+                                <td><span class="badge badge-primary"><?php echo htmlspecialchars($s['reg_number']); ?></span></td>
+                                <td><div style="font-weight: 600; color: var(--text-primary);"><?php echo htmlspecialchars($s['full_name']); ?></div></td>
+                                <td><?php echo htmlspecialchars($s['class_grade']); ?></td>
+                                <td style="text-align: right;">
+                                    <a href="search.php?reg_number=<?php echo urlencode($s['reg_number']); ?>" class="btn btn-secondary btn-sm">
+                                        <i class="fa-solid fa-eye"></i>
+                                        <span class="btn-text">View Profile</span>
+                                    </a>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
     <?php else: ?>
         <!-- Student Not Found -->
-        <div class="glass-card animate-fade-in" style="padding: 64px 40px; text-align: center;">
-            <div style="width: 80px; height: 80px; border-radius: 20px; background: hsl(0, 85%, 95%); margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="none" viewBox="0 0 24 24" stroke="hsl(0, 75%, 55%)" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-            </div>
-            <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 8px; color: var(--text-primary);">No student found</h2>
-            <p style="color: var(--text-muted); max-width: 420px; margin: 0 auto 28px; line-height: 1.6;">
-                No student record matches your search for 
-                <strong style="color: var(--text-primary);"><?php echo htmlspecialchars($search_query); ?></strong>.
-                Verify format (e.g. S4558/0001/2026) or try browsing the directory.
-            </p>
-            <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
-                <a href="search.php" class="btn btn-secondary">Try Again</a>
-                <a href="students.php" class="btn btn-primary">Browse Directory</a>
+        <div class="glass-card animate-fade-in">
+            <div class="empty-state">
+                <div class="empty-state-icon" style="background: var(--color-danger-subtle); color: var(--color-danger);">
+                    <i class="fa-solid fa-user-xmark"></i>
+                </div>
+                <h2 class="empty-state-title">No student found</h2>
+                <p class="empty-state-desc">
+                    No student record matches your search for 
+                    <strong style="color: var(--text-primary);"><?php echo htmlspecialchars($search_query); ?></strong>.
+                    Verify the format or try browsing the directory.
+                </p>
+                <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: var(--sp-4);">
+                    <a href="search.php" class="btn btn-secondary">Try Again</a>
+                    <a href="students.php" class="btn btn-primary">Browse Directory</a>
+                </div>
             </div>
         </div>
     <?php endif; ?>
 
 <?php else: ?>
     <!-- Initial state: no search yet -->
-    <div class="glass-card" style="padding: 64px 40px; text-align: center;">
-        <div style="width: 80px; height: 80px; border-radius: 20px; background: var(--primary-light); margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="none" viewBox="0 0 24 24" stroke="var(--primary)" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-            </svg>
+    <div class="glass-card animate-fade-in">
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </div>
+            <h2 class="empty-state-title">Search Student Records</h2>
+            <p class="empty-state-desc">
+                Enter a student name or registration number above (e.g. <strong>S4558/STNO/YEAR</strong>) to retrieve their full profile details.
+            </p>
         </div>
-        <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 8px; color: var(--text-primary);">Search Student Records</h2>
-        <p style="color: var(--text-muted); max-width: 400px; margin: 0 auto;">
-            Enter a student registration number above (format: <strong>S4558/STNO/YEAR</strong>) to retrieve their full profile details.
-        </p>
     </div>
 <?php endif; ?>
 
