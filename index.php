@@ -16,7 +16,7 @@ try {
         $total_teachers = $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'teacher'")->fetchColumn();
     } else {
         $stmt_my_regs = $pdo->prepare("SELECT COUNT(*) FROM students WHERE registered_by = :user_id");
-        $stmt_my_regs->execute(['user_id' => $current_user['user_id']]);
+        $stmt_my_regs->execute(['user_id' => $current_user['id']]);
         $my_registrations = $stmt_my_regs->fetchColumn();
     }
 
