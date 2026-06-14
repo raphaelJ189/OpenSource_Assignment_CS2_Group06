@@ -28,7 +28,7 @@ try {
 }
 
 $current_year = (int)date('Y');
-$years = range($current_year + 1, $current_year - 5);
+$years = range($current_year, $current_year - 5);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $full_name = trim($_POST['full_name'] ?? '');
@@ -40,10 +40,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Validation
     $errors = [];
     if (empty($full_name)) $errors[] = 'Full name is required.';
-    if (empty($date_of_birth)) $errors[] = 'Date of birth is required.';
+    
+    $birth_timestamp = null;
+    $today_timestamp = strtotime(date('Y-m-d'));
+    if (empty($date_of_birth)) {
+        $errors[] = 'Date of birth is required.';
+    } else {
+        $birth_timestamp = strtotime($date_of_birth);
+        if ($birth_timestamp > $today_timestamp) {
+            $errors[] = 'Date of birth cannot be in the future.';
+        }
+    }
+    
     if (!in_array($gender, ['Male', 'Female'])) $errors[] = 'Invalid gender selected.';
     if (empty($class_grade)) $errors[] = 'Class/Grade is required.';
-    if ($enrolment_year < 2000 || $enrolment_year > ($current_year + 5)) $errors[] = 'Invalid enrolment year.';
+    
+    if ($enrolment_year < 2000 || $enrolment_year > $current_year) {
+        $errors[] = 'Invalid enrolment year.';
+    } elseif ($birth_timestamp !== null && $birth_timestamp <= $today_timestamp) {
+        $birth_year = (int)date('Y', $birth_timestamp);
+        if (($enrolment_year - $birth_year) < 3) {
+            $errors[] = 'Student must be at least 3 years old at the time of enrolment.';
+        }
+    }
 
     if (empty($errors)) {
         try {
