@@ -9,8 +9,16 @@ try {
     // 1. Total Students
     $total_students = $pdo->query("SELECT COUNT(*) FROM students")->fetchColumn();
 
-    // 2. Total Teachers
-    $total_teachers = $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'teacher'")->fetchColumn();
+    // 2. Total Teachers (Admin Only) or My Registrations (Teacher)
+    $total_teachers = 0;
+    $my_registrations = 0;
+    if ($current_user['role'] === 'admin') {
+        $total_teachers = $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'teacher'")->fetchColumn();
+    } else {
+        $stmt_my_regs = $pdo->prepare("SELECT COUNT(*) FROM students WHERE registered_by = :user_id");
+        $stmt_my_regs->execute(['user_id' => $current_user['user_id']]);
+        $my_registrations = $stmt_my_regs->fetchColumn();
+    }
 
     // 3. Registered This Year
     $current_year = date('Y');
@@ -42,15 +50,26 @@ try {
         <div class="stats-value"><?php echo number_format($total_students); ?></div>
     </div>
 
-    <!-- Card 2: Total Teachers -->
+    <!-- Card 2: Role-based Stats -->
     <div class="glass-card stats-card">
         <div class="stats-icon secondary">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-            </svg>
+            <?php if ($current_user['role'] === 'admin'): ?>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+            <?php else: ?>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+            <?php endif; ?>
         </div>
-        <div class="stats-label">Active Teachers</div>
-        <div class="stats-value"><?php echo number_format($total_teachers); ?></div>
+        <?php if ($current_user['role'] === 'admin'): ?>
+            <div class="stats-label">Active Teachers</div>
+            <div class="stats-value"><?php echo number_format($total_teachers); ?></div>
+        <?php else: ?>
+            <div class="stats-label">My Registrations</div>
+            <div class="stats-value"><?php echo number_format($my_registrations); ?></div>
+        <?php endif; ?>
     </div>
 
     <!-- Card 3: Registered This Year -->

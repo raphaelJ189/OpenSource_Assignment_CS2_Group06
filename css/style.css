@@ -745,3 +745,37 @@ body {
         gap: 30px;
     }
 }
+
+/* Global Page Loader */
+.global-loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: var(--bg-app);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.global-loader.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.spinner {
+    width: 48px;
+    height: 48px;
+    border: 5px solid var(--border-color);
+    border-bottom-color: var(--primary);
+    border-radius: 50%;
+    animation: rotation 1s linear infinite;
+}
+
+@keyframes rotation {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

@@ -6,19 +6,27 @@ require_once __DIR__ . '/includes/header.php';
 
 $student = null;
 $searched = false;
-$reg_number = strtoupper(trim($_GET['reg_number'] ?? $_POST['reg_number'] ?? ''));
+$search_query = trim($_GET['reg_number'] ?? $_POST['reg_number'] ?? '');
+$students_found = [];
 
-if (!empty($reg_number)) {
+if (!empty($search_query)) {
     $searched = true;
     try {
         $stmt = $pdo->prepare("
             SELECT s.*, u.full_name AS registered_by_name, u.username AS registered_by_username
             FROM students s
             LEFT JOIN users u ON s.registered_by = u.user_id
-            WHERE s.reg_number = :reg
+            WHERE s.reg_number = :exact_reg 
+               OR s.full_name LIKE :like_name
         ");
-        $stmt->execute(['reg' => $reg_number]);
-        $student = $stmt->fetch();
+        $stmt->execute([
+            'exact_reg' => $search_query,
+            'like_name' => '%' . $search_query . '%'
+        ]);
+        $students_found = $stmt->fetchAll();
+        if (count($students_found) === 1) {
+            $student = $students_found[0];
+        }
     } catch (PDOException $e) {
         $student = null;
     }
@@ -40,20 +48,19 @@ function age_from_dob($dob) {
 <div class="glass-card" style="padding: 32px; margin-bottom: 28px;">
     <form method="GET" action="search.php" style="display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap;">
         <div class="form-group" style="flex: 1; min-width: 260px; margin-bottom: 0;">
-            <label class="form-label" for="reg_no_input">Search by Student Registration Number</label>
+            <label class="form-label" for="reg_no_input">Search by Name or Registration Number</label>
             <div class="search-box">
                 <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                 <input id="reg_no_input" type="text" name="reg_number" class="form-input" 
-                       placeholder="e.g. S4558/0001/2026"
-                       value="<?php echo htmlspecialchars($reg_number); ?>"
-                       style="text-transform: uppercase;" autofocus>
+                       placeholder="e.g. S4558/0001/2026 or John Doe"
+                       value="<?php echo htmlspecialchars($search_query); ?>" autofocus>
             </div>
         </div>
         <button type="submit" class="btn btn-primary" style="height: 48px;">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
             Search
         </button>
-        <?php if (!empty($reg_number)): ?>
+        <?php if (!empty($search_query)): ?>
             <a href="search.php" class="btn btn-secondary" style="height: 48px;">Clear</a>
         <?php endif; ?>
     </form>
@@ -61,7 +68,8 @@ function age_from_dob($dob) {
 
 <!-- Result Card -->
 <?php if ($searched): ?>
-    <?php if ($student): ?>
+    <?php if (count($students_found) === 1): ?>
+        <?php $student = $students_found[0]; ?>
         <!-- Student Found: Profile Card -->
         <div class="glass-card animate-fade-in" style="overflow: hidden;">
             <!-- Profile Header Banner -->
@@ -151,6 +159,36 @@ function age_from_dob($dob) {
             </div>
         </div>
 
+    <?php elseif (count($students_found) > 1): ?>
+        <!-- Multiple Students Found -->
+        <div class="glass-card animate-fade-in" style="padding: 32px;">
+            <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 24px;">Multiple students found</h2>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Reg Number</th>
+                            <th>Full Name</th>
+                            <th>Class/Grade</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($students_found as $s): ?>
+                        <tr>
+                            <td><span class="badge badge-primary"><?php echo htmlspecialchars($s['reg_number']); ?></span></td>
+                            <td style="font-weight: 600;"><?php echo htmlspecialchars($s['full_name']); ?></td>
+                            <td><?php echo htmlspecialchars($s['class_grade']); ?></td>
+                            <td>
+                                <a href="search.php?reg_number=<?php echo urlencode($s['reg_number']); ?>" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;">View Profile</a>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     <?php else: ?>
         <!-- Student Not Found -->
         <div class="glass-card animate-fade-in" style="padding: 64px 40px; text-align: center;">
@@ -161,8 +199,8 @@ function age_from_dob($dob) {
             </div>
             <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 8px; color: var(--text-primary);">No student found</h2>
             <p style="color: var(--text-muted); max-width: 420px; margin: 0 auto 28px; line-height: 1.6;">
-                No student record matches the registration number
-                <strong style="color: var(--text-primary);"><?php echo htmlspecialchars($reg_number); ?></strong>.
+                No student record matches your search for 
+                <strong style="color: var(--text-primary);"><?php echo htmlspecialchars($search_query); ?></strong>.
                 Verify format (e.g. S4558/0001/2026) or try browsing the directory.
             </p>
             <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
