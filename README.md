@@ -10,10 +10,6 @@ SRMS is a PHP 8+ and MySQL student record management system for primary and seco
 - HTML, CSS, vanilla JavaScript
 - Docker deployment support for Render
 
-## Session Timeout
-
-Authenticated pages now show a client-side inactivity warning after 15 minutes and log the user out after 20 minutes unless they continue the session. The shared footer script keeps the session alive through `keep-alive.php`, while the PHP auth helper enforces the same timeout server-side.
-
 ## Local Setup With XAMPP
 
 1. Start Apache and MySQL in XAMPP.
