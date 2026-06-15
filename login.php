@@ -99,7 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         <?php endif; ?>
 
-        <form action="login.php" method="POST" autocomplete="on">
+        <form action="login.php" method="POST" autocomplete="on" id="login-form">
             <div class="form-group" style="margin-bottom: var(--sp-4);">
                 <label for="username" class="form-label">
                     Username <span class="required-dot">*</span>
@@ -131,8 +131,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </button>
             </div>
 
-            <button type="submit" class="btn btn-primary" style="width: 100%; height: 44px; font-size: var(--font-size-md);">
-                <span>Sign In</span>
+            <button type="submit" class="btn btn-primary" id="btn-submit-login" style="width: 100%; height: 44px; font-size: var(--font-size-md);">
+                <span class="btn-text">Sign In</span>
                 <i class="fa-solid fa-right-to-bracket" style="margin-left: 4px;"></i>
             </button>
         </form>
@@ -184,6 +184,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 document.documentElement.setAttribute('data-theme', target);
                 localStorage.setItem('theme', target);
                 applyThemeIcons(target);
+            });
+        }
+
+        // Login submit loading state
+        const loginForm = document.getElementById('login-form');
+        const submitLoginBtn = document.getElementById('btn-submit-login');
+
+        if (loginForm && submitLoginBtn) {
+            loginForm.addEventListener('submit', () => {
+                if (!loginForm.checkValidity()) return;
+
+                submitLoginBtn.classList.add('btn-loading');
+                submitLoginBtn.disabled = true;
             });
         }
     </script>
