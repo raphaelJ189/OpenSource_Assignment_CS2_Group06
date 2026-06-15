@@ -1,6 +1,19 @@
-## Student Record Management System (SRMS)
+## Project Title
+### Student Record Management System (SRMS)
 
-SRMS is a PHP 8+ and MySQL student record management system for primary and secondary schools. It supports admin and teacher logins, teacher account management, student registration, search, editing, deletion, and dashboard summaries.
+## Degree Program
+Computer Science (Bsc-CS2)
+
+## Group Number
+Group 06
+
+## Project Description
+SRMS is a PHP 8+ and MySQL student record management system for primary and secondary schools. It supports admin and teacher logins, teacher account management, student registration, search, editing, deletion, and dashboard summaries. This project is a PHP-based Student Information Management System.
+
+The system is designed to manage student records in primary and secondary schools in Tanzania. It allows users (administrators/teachers) to:
+- Register new students into the system  
+- Display all registered student records  
+- Search for a student using a registration number  
 
 ## Stack
 
