@@ -1,0 +1,9 @@
+.git
+.gitignore
+database.db
+database.db-journal
+database.db-wal
+database.db-shm
+bin/
+.DS_Store
+*.log

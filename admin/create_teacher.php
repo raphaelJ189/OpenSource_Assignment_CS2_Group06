@@ -54,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $form = []; // Clear form
             }
         } catch (PDOException $e) {
-            $error = 'Database write failed: ' . $e->getMessage();
+            $error = 'Database write failed: ' . database_error_message($e);
         }
     } else {
         $error = implode('<br>', $errors);

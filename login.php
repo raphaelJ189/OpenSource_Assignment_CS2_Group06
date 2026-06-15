@@ -53,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $error = 'Invalid username or password.';
             }
         } catch (PDOException $e) {
-            $error = 'System error: ' . $e->getMessage();
+            $error = 'System error: ' . database_error_message($e, 'Please try again later.');
         }
     }
 }
