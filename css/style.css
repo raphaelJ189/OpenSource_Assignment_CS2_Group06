@@ -2350,6 +2350,71 @@ select.form-input.has-icon-left {
 }
 
 /* ============================================================
+   25. SESSION TIMEOUT DIALOG
+   ============================================================ */
+dialog.session-timeout-dialog {
+    border: 0;
+    padding: 0;
+    background: transparent;
+    color: inherit;
+    width: min(92vw, 520px);
+    max-width: 520px;
+    box-shadow: none;
+}
+
+dialog.session-timeout-dialog::backdrop {
+    background: rgba(10, 12, 22, 0.58);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+.session-timeout-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-xl);
+    padding: var(--sp-6);
+}
+
+.session-timeout-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: var(--radius-xl);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: var(--sp-4);
+    background: var(--color-warning-subtle);
+    color: var(--color-warning-text);
+    font-size: 1.4rem;
+}
+
+.session-timeout-copy h2 {
+    font-size: var(--font-size-2xl);
+    line-height: var(--line-height-tight);
+    margin-bottom: var(--sp-2);
+    color: var(--text-primary);
+}
+
+.session-timeout-copy p {
+    color: var(--text-muted);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-relaxed);
+}
+
+.session-timeout-actions {
+    display: flex;
+    gap: var(--sp-3);
+    justify-content: flex-end;
+    margin-top: var(--sp-6);
+}
+
+.session-timeout-actions .btn {
+    min-width: 150px;
+    justify-content: center;
+}
+
+/* ============================================================
    25. SEARCH / PROFILE VIEW
    ============================================================ */
 .profile-banner {

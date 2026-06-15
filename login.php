@@ -41,6 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['username'] = $user['username'];
                     $_SESSION['role'] = $user['role'];
                     $_SESSION['full_name'] = $user['full_name'];
+                    update_session_activity();
 
                     header("Location: index.php");
                     exit();
