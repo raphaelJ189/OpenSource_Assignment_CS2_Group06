@@ -24,7 +24,7 @@ try {
         exit();
     }
 } catch (PDOException $e) {
-    die("Database error: " . $e->getMessage());
+    die("Database error: " . database_error_message($e));
 }
 
 $current_year = (int)date('Y');
@@ -90,7 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute(['id' => $student_id]);
             $student = $stmt->fetch();
         } catch (PDOException $e) {
-            $error = 'Database update failed: ' . $e->getMessage();
+            $error = 'Database update failed: ' . database_error_message($e);
         }
     } else {
         $error = implode('<br>', $errors);

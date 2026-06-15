@@ -113,7 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $form = []; // Clear form on success
         } catch (Exception $e) {
             $pdo->rollBack();
-            $error = 'Database registration failed: ' . $e->getMessage();
+            $error = 'Database registration failed: ' . database_error_message($e);
         }
     } else {
         $error = implode('<br>', $errors);

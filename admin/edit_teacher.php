@@ -29,7 +29,7 @@ try {
         exit();
     }
 } catch (PDOException $e) {
-    die("Database error: " . $e->getMessage());
+    die("Database error: " . database_error_message($e));
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -95,7 +95,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $teacher = $stmt->fetch();
             }
         } catch (PDOException $e) {
-            $error = 'Database write failed: ' . $e->getMessage();
+            $error = 'Database write failed: ' . database_error_message($e);
         }
     } else {
         $error = implode('<br>', $errors);

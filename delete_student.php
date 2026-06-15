@@ -28,7 +28,7 @@ try {
         exit();
     }
 } catch (PDOException $e) {
-    die("Database error: " . $e->getMessage());
+    die("Database error: " . database_error_message($e));
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header("Location: students.php");
         exit();
     } catch (PDOException $e) {
-        $error = 'Failed to delete student record: ' . $e->getMessage();
+        $error = 'Failed to delete student record: ' . database_error_message($e);
     }
 }
 ?>
