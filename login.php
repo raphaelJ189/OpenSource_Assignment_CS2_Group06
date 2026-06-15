@@ -53,17 +53,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $error = 'Invalid username or password.';
             }
         } catch (PDOException $e) {
-            $error = 'System error: ' . $e->getMessage();
+            $error = 'System error: ' . database_error_message($e, 'Please try again later.');
         }
     }
 }
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Student Record Management System (SRMS)</title>
+    <title>Secure Login | SRMS</title>
+    <meta name="description" content="Access the Student Record Management System (SRMS). Secure institutional sign in.">
+    
+    <!-- Font Awesome Free 6.4.0 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
     <link rel="stylesheet" href="css/style.css">
     <script>
         // Apply saved theme early to prevent flash
@@ -71,67 +76,115 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         document.documentElement.setAttribute('data-theme', savedTheme);
     </script>
 </head>
-<body class="login-wrapper">
+<body class="login-page">
 
-    <div class="login-card glass-card animate-fade-in">
-        <div class="login-header">
-            <div class="logo-icon">SRMS</div>
-            <h2 class="logo-text" style="display: block; font-size: 1.6rem; margin-bottom: 8px;">SRMS</h2>
-            <p>Student Record Management System</p>
+    <div class="login-card glass-card animate-scale-in">
+        <div class="login-brand">
+            <div class="login-brand-icon">
+                <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+            <h1 class="login-brand-name">SRMS</h1>
+            <div class="login-brand-divider"></div>
+            <p class="login-brand-sub">Tanzania School Information System</p>
         </div>
 
         <?php if (!empty($error)): ?>
-            <div class="alert alert-danger">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                <?php echo htmlspecialchars($error); ?>
+            <div class="alert alert-danger" role="alert" aria-live="assertive">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <div class="alert-body">
+                    <div class="alert-title">Sign In Failed</div>
+                    <p><?php echo htmlspecialchars($error); ?></p>
+                </div>
             </div>
         <?php endif; ?>
 
-        <form action="login.php" method="POST" autocomplete="off">
-            <div class="form-group">
-                <label for="username" class="form-label">Username</label>
-                <input type="text" id="username" name="username" class="form-input" placeholder="e.g. admin" required autofocus>
+        <form action="login.php" method="POST" autocomplete="on">
+            <div class="form-group" style="margin-bottom: var(--sp-4);">
+                <label for="username" class="form-label">
+                    Username <span class="required-dot">*</span>
+                </label>
+                <div class="input-wrapper">
+                    <span class="input-icon left"><i class="fa-solid fa-user"></i></span>
+                    <input type="text" id="username" name="username" class="form-input has-icon-left" placeholder="e.g. admin" required autofocus autocomplete="username">
+                </div>
             </div>
 
-            <div class="form-group">
-                <label for="password" class="form-label">Password</label>
-                <input type="password" id="password" name="password" class="form-input" placeholder="••••••••" required>
+            <div class="form-group" style="margin-bottom: var(--sp-4);">
+                <label for="password" class="form-label">
+                    Password <span class="required-dot">*</span>
+                </label>
+                <div class="input-wrapper">
+                    <span class="input-icon left"><i class="fa-solid fa-lock"></i></span>
+                    <input type="password" id="password" name="password" class="form-input has-icon-left has-icon-right" placeholder="••••••••" required autocomplete="current-password">
+                    <span class="input-icon right clickable" id="password-toggle" role="button" aria-label="Toggle Password Visibility">
+                        <i class="fa-solid fa-eye" id="toggle-eye-icon"></i>
+                    </span>
+                </div>
             </div>
 
             <div style="margin-bottom: 24px; display: flex; justify-content: flex-end;">
-                <button type="button" class="theme-toggle" id="theme-toggle-btn" title="Toggle Theme" style="width: auto; padding: 0 16px; font-size: 0.85rem; font-weight: 500; gap: 6px;">
-                    <span class="theme-label">Dark Mode</span>
+                <button type="button" class="theme-toggle-btn" id="theme-toggle-btn" title="Toggle Theme" style="width: auto; padding: 0 16px; font-size: 0.85rem; font-weight: 500; gap: 6px;" aria-label="Toggle Dark/Light Theme">
+                    <i class="fa-solid fa-moon" id="theme-moon-icon"></i>
+                    <i class="fa-solid fa-sun" id="theme-sun-icon" style="display:none;"></i>
+                    <span class="theme-label" style="margin-left: 4px;">Dark Mode</span>
                 </button>
             </div>
 
-            <button type="submit" class="btn btn-primary" style="width: 100%;">
-                Sign In
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            <button type="submit" class="btn btn-primary" style="width: 100%; height: 44px; font-size: var(--font-size-md);">
+                <span>Sign In</span>
+                <i class="fa-solid fa-right-to-bracket" style="margin-left: 4px;"></i>
             </button>
         </form>
         
-        <div style="text-align: center; margin-top: 24px; font-size: 0.8rem; color: var(--text-muted);">
-            Student Record Management System &copy; <?php echo date('Y'); ?>
+        <div class="login-footer">
+            <span class="login-footer-copy">Student Record Management System &copy; <?php echo date('Y'); ?></span>
         </div>
     </div>
 
     <script>
-        const themeBtn = document.getElementById('theme-toggle-btn');
-        const themeLabel = themeBtn.querySelector('.theme-label');
-        
-        function updateThemeUI(theme) {
-            themeLabel.textContent = theme === 'dark' ? 'Light Mode' : 'Dark Mode';
+        // Password Visibility Toggle
+        const passwordInput = document.getElementById('password');
+        const passwordToggle = document.getElementById('password-toggle');
+        const toggleEyeIcon = document.getElementById('toggle-eye-icon');
+
+        if (passwordToggle && passwordInput && toggleEyeIcon) {
+            passwordToggle.addEventListener('click', () => {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                toggleEyeIcon.className = type === 'password' ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash';
+            });
         }
 
-        updateThemeUI(document.documentElement.getAttribute('data-theme'));
+        // Theme Toggle
+        const themeBtn = document.getElementById('theme-toggle-btn');
+        const sunIcon = document.getElementById('theme-sun-icon');
+        const moonIcon = document.getElementById('theme-moon-icon');
+        const themeLabel = themeBtn.querySelector('.theme-label');
+        
+        function applyThemeIcons(theme) {
+            if (theme === 'dark') {
+                if (sunIcon) sunIcon.style.display = 'inline-block';
+                if (moonIcon) moonIcon.style.display = 'none';
+                if (themeLabel) themeLabel.textContent = 'Light Mode';
+            } else {
+                if (sunIcon) sunIcon.style.display = 'none';
+                if (moonIcon) moonIcon.style.display = 'inline-block';
+                if (themeLabel) themeLabel.textContent = 'Dark Mode';
+            }
+        }
 
-        themeBtn.addEventListener('click', () => {
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            document.documentElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-            updateThemeUI(newTheme);
-        });
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+        applyThemeIcons(currentTheme);
+
+        if (themeBtn) {
+            themeBtn.addEventListener('click', () => {
+                const current = document.documentElement.getAttribute('data-theme');
+                const target = current === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', target);
+                localStorage.setItem('theme', target);
+                applyThemeIcons(target);
+            });
+        }
     </script>
 </body>
 </html>

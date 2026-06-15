@@ -28,7 +28,7 @@ try {
         exit();
     }
 } catch (PDOException $e) {
-    die("Database error: " . $e->getMessage());
+    die("Database error: " . database_error_message($e));
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -40,61 +40,123 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header("Location: students.php");
         exit();
     } catch (PDOException $e) {
-        $error = 'Failed to delete student record: ' . $e->getMessage();
+        $error = 'Failed to delete student record: ' . database_error_message($e);
     }
 }
 ?>
 
 <?php if (!empty($error)): ?>
-    <div class="alert alert-danger" style="margin-bottom: 24px;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        <span><?php echo $error; ?></span>
-    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            window.SRMS.notify(<?php echo json_encode($error); ?>, 'danger', 'Deletion Failed');
+        });
+    </script>
 <?php endif; ?>
 
-<div class="glass-card" style="padding: 36px; max-width: 600px; margin: 40px auto;">
-    <div style="text-align: center; margin-bottom: 24px;">
-        <div class="stats-icon accent" style="margin: 0 auto 16px; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+<div class="delete-confirm-wrap animate-fade-in-up">
+    <div class="danger-card">
+        <div class="danger-card-header">
+            <div class="danger-icon">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div>
+                <h2 class="danger-card-title">Confirm Record Deletion</h2>
+                <p class="danger-card-subtitle">Are you sure you want to permanently delete this student record? This action cannot be undone.</p>
+            </div>
         </div>
-        <h2 style="font-size: 1.4rem; font-weight: 700; color: var(--text-primary);">Confirm Deletion</h2>
-        <p style="color: var(--text-muted); margin-top: 8px;">Are you sure you want to permanently delete this student record? This action cannot be undone.</p>
-    </div>
 
-    <div style="background-color: var(--primary-light); padding: 20px; border-radius: 12px; margin-bottom: 24px;">
-        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
-            <tr>
-                <td style="padding: 6px 0; color: var(--text-muted); font-weight: 500; width: 40%;">Registration Number:</td>
-                <td style="padding: 6px 0; font-weight: 700; color: var(--primary);"><?php echo htmlspecialchars($student['reg_number']); ?></td>
-            </tr>
-            <tr>
-                <td style="padding: 6px 0; color: var(--text-muted); font-weight: 500;">Full Name:</td>
-                <td style="padding: 6px 0; font-weight: 600; color: var(--text-primary);"><?php echo htmlspecialchars($student['full_name']); ?></td>
-            </tr>
-            <tr>
-                <td style="padding: 6px 0; color: var(--text-muted); font-weight: 500;">Class / Grade:</td>
-                <td style="padding: 6px 0; color: var(--text-primary);"><?php echo htmlspecialchars($student['class_grade']); ?></td>
-            </tr>
-            <tr>
-                <td style="padding: 6px 0; color: var(--text-muted); font-weight: 500;">Gender:</td>
-                <td style="padding: 6px 0; color: var(--text-primary);"><?php echo htmlspecialchars($student['gender']); ?></td>
-            </tr>
-            <tr>
-                <td style="padding: 6px 0; color: var(--text-muted); font-weight: 500;">Enrolment Year:</td>
-                <td style="padding: 6px 0; color: var(--text-primary);"><?php echo htmlspecialchars($student['enrolment_year']); ?></td>
-            </tr>
-        </table>
-    </div>
+        <div class="danger-card-body">
+            <div class="student-preview">
+                <div class="student-preview-row">
+                    <i class="fa-solid fa-id-badge"></i>
+                    <span class="preview-key">Registration Number:</span>
+                    <span class="preview-val"><?php echo htmlspecialchars($student['reg_number']); ?></span>
+                </div>
+                <div class="student-preview-row">
+                    <i class="fa-solid fa-user"></i>
+                    <span class="preview-key">Full Name:</span>
+                    <span class="preview-val" id="target-student-name"><?php echo htmlspecialchars($student['full_name']); ?></span>
+                </div>
+                <div class="student-preview-row">
+                    <i class="fa-solid fa-school"></i>
+                    <span class="preview-key">Class / Grade:</span>
+                    <span class="preview-val"><?php echo htmlspecialchars($student['class_grade']); ?></span>
+                </div>
+                <div class="student-preview-row">
+                    <i class="fa-solid fa-venus-mars"></i>
+                    <span class="preview-key">Gender:</span>
+                    <span class="preview-val"><?php echo htmlspecialchars($student['gender']); ?></span>
+                </div>
+                <div class="student-preview-row">
+                    <i class="fa-solid fa-calendar-check"></i>
+                    <span class="preview-key">Enrolment Year:</span>
+                    <span class="preview-val"><?php echo htmlspecialchars($student['enrolment_year']); ?></span>
+                </div>
+            </div>
 
-    <form method="POST" action="delete_student.php?student_id=<?php echo urlencode($student_id); ?>">
-        <div style="display: flex; gap: 16px; justify-content: center;">
-            <a href="students.php" class="btn btn-secondary" style="flex: 1; text-align: center; justify-content: center;">Cancel</a>
-            <button type="submit" class="btn btn-primary" style="flex: 1; background: var(--accent); border-color: var(--accent); justify-content: center;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                Yes, Delete Record
-            </button>
+            <form method="POST" action="delete_student.php?student_id=<?php echo urlencode($student_id); ?>" id="delete-student-form">
+                <div class="confirm-name-wrap">
+                    <label class="confirm-name-label" for="confirm_name">
+                        Type the student's name <strong id="target-name-strong"><?php echo htmlspecialchars($student['full_name']); ?></strong> to confirm:
+                    </label>
+                    <input type="text" id="confirm_name" class="form-input" placeholder="Type name exactly as shown above" required autocomplete="off">
+                    <div class="form-error" id="confirm-name-error" style="margin-top: 4px;"></div>
+                </div>
+
+                <div class="danger-card-footer">
+                    <a href="students.php" class="btn btn-secondary" id="cancel-btn" autofocus>Cancel</a>
+                    <button type="submit" class="btn btn-danger" id="delete-btn" disabled>
+                        <i class="fa-solid fa-trash-can"></i>
+                        <span>Yes, Delete Record</span>
+                    </button>
+                </div>
+            </form>
         </div>
-    </form>
+    </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const confirmInput = document.getElementById('confirm_name');
+    const deleteBtn = document.getElementById('delete-btn');
+    const targetName = document.getElementById('target-student-name').textContent.trim();
+    const errorDiv = document.getElementById('confirm-name-error');
+    const cancelBtn = document.getElementById('cancel-btn');
+
+    // Autofocus cancel button as safe default
+    if (cancelBtn) {
+        cancelBtn.focus();
+    }
+
+    confirmInput.addEventListener('input', () => {
+        const value = confirmInput.value.trim();
+        if (value === targetName) {
+            confirmInput.classList.remove('is-invalid');
+            confirmInput.classList.add('is-valid');
+            deleteBtn.removeAttribute('disabled');
+            errorDiv.innerHTML = '';
+        } else {
+            confirmInput.classList.remove('is-valid');
+            deleteBtn.setAttribute('disabled', 'true');
+            if (value.length > 0) {
+                confirmInput.classList.add('is-invalid');
+                errorDiv.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> Name does not match exactly.';
+            } else {
+                confirmInput.classList.remove('is-invalid');
+                errorDiv.innerHTML = '';
+            }
+        }
+    });
+
+    const form = document.getElementById('delete-student-form');
+    form.addEventListener('submit', (e) => {
+        if (confirmInput.value.trim() !== targetName) {
+            e.preventDefault();
+        } else {
+            deleteBtn.classList.add('btn-loading');
+        }
+    });
+});
+</script>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
