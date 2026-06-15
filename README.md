@@ -1,106 +1,56 @@
-## Student Record Management System (SRMS)
+## Project Title
+Student Record Management System (SRMS) for Primary and Secondary School
 
-SRMS is a PHP 8+ and MySQL student record management system for primary and secondary schools. It supports admin and teacher logins, teacher account management, student registration, search, editing, deletion, and dashboard summaries.
+## Project Overview
 
-## Stack
+**MwalimuHub SIMS** is a web-based Student Information Management System designed for primary and secondary schools in Tanzania. Built as part of the Open Source Technologies (CP 222) coursework, the system enables school administrators to digitally manage student records, improving data accuracy, accessibility, and operational efficiency.
 
-- PHP 8+
-- MySQL
-- PDO prepared statements
-- HTML, CSS, vanilla JavaScript
-- Docker deployment support for Render
+This project is a PHP-based Student Record Management System designed to manage student records securely and efficiently.
 
-## Local Setup With XAMPP
+### Features
+The system includes modern and secure features according to the Software Requirements Specification (SRS):
+- **User Authentication**: Secure login and logout using PHP `password_hash()`.
+- **Role-Based Access Control**: Different access levels for `Admin` and `Teacher` roles.
+- **Admin Capabilities**: Create, edit, and deactivate teacher accounts. View total active teachers.
+- **Teacher Capabilities**: 
+  - Register new students. The system automatically generates a unique registration number (Format: `S+SCHNO+/STNO/YEAR`).
+  - View the full directory of registered students.
+  - Track "My Registrations" on their personalized dashboard.
+- **Search Functionality**: Search for any student using either their exact **Registration Number** or their **Full Name**.
+- **Record Management**: Edit and update student information. Delete records (Admin functionality).
+- **Modern UI/UX**: 
+  - Premium Glassmorphism design aesthetics.
+  - Fully responsive layout.
+  - Light and Dark mode theme toggle.
+  - Global page loaders for smooth transitions between pages and actions.
 
-1. Start Apache and MySQL in XAMPP.
-2. Create a MySQL database named `sims_db` in phpMyAdmin.
-3. Open a terminal in the project folder.
-4. Run the setup script:
+## Technology Used
+- **Backend**: PHP 8+
+- **Database**: MySQL (PDO for secure, prepared statements)
+- **Frontend**: HTML5, CSS3 (Vanilla CSS with CSS Variables for theming)
 
-```bash
-php setup_db.php
-```
+## Dependencies
+- **PHP**: Version 8.0 or higher.
+- **MySQL Database Server**: Any compatible version (e.g., MySQL 5.7+ or MariaDB).
+- **PHP PDO Extension**: Required for secure database connections.
+- **Web Server**: Apache or Nginx (can also use PHP's built-in development server).
 
-If `php` is not available in your PATH, use the XAMPP PHP executable, for example:
+## Installation Steps
+1. Clone the repository to your local web server environment (e.g., XAMPP, LAMP).
+2. Ensure you have a MySQL server running and create an empty database named `sims_db`.
+3. If necessary, configure your database credentials in `db.php` (default is `srms_user` / `srms_pass` or `root` / `""`).
+4. Run the `setup_db.php` script from your browser to automatically create the database tables.
+5. The default admin account (`admin` / `admin123`) is created automatically during setup.
+6. Navigate to `index.php` to log in and start using the system.
 
-```bash
-C:\xampp\php\php.exe setup_db.php
-```
+## Git Commands Used
+Throughout the development of this project, the following Git commands were frequently used to manage version control and collaborate:
+- `git clone <repository-url>`: To clone the remote repository to the local machine.
+- `git status`: To check the current status of files (modified, untracked, staged).
+- `git add .`: To stage all modified and new files for a commit.
+- `git commit -m "commit message"`: To commit staged changes with a descriptive message.
+- `git push origin main`: To upload local commits to the remote GitHub repository.
+- `git pull origin main`: To fetch and integrate remote changes into the local branch.
 
-Default login after setup:
-
-```text
-username: admin
-password: admin123
-```
-
-## Environment Variables
-
-The app reads database settings from environment variables in production. Local defaults still work with XAMPP.
-
-```text
-APP_ENV=production
-APP_DEBUG=false
-DB_HOST=your-mysql-host
-DB_PORT=3306
-DB_NAME=sims_db
-DB_USER=your-database-user
-DB_PASS=your-database-password
-DB_CHARSET=utf8mb4
-SCHOOL_CODE=4558
-ADMIN_PASSWORD=change-this-before-setup
-```
-
-You can also provide a MySQL `DATABASE_URL` instead of separate `DB_*` values.
-
-## Database Setup
-
-`setup_db.php` is safe by default: it creates missing tables and seeds the admin user only if missing.
-
-Run normal setup:
-
-```bash
-php setup_db.php
-```
-
-Reset all tables and data only when you intentionally want a fresh database:
-
-```bash
-php setup_db.php --fresh
-```
-
-Do not run `--fresh` on production unless you want to delete existing users and students.
-
-## Deploy To Render
-
-Render does not provide MySQL as its built-in managed database, so use an external cloud MySQL provider such as Aiven, Railway MySQL, Clever Cloud MySQL, or another MySQL host.
-
-1. Push this repository to GitHub.
-2. Create a cloud MySQL database.
-3. In that database, create or select the database name you will use, for example `sims_db`.
-4. In Render, create a new Web Service from the GitHub repo.
-5. Choose Docker runtime. The included `Dockerfile` installs PHP Apache with `pdo_mysql`.
-6. Add these Render environment variables:
-
-```text
-APP_ENV=production
-APP_DEBUG=false
-DB_HOST=your-cloud-mysql-host
-DB_PORT=3306
-DB_NAME=sims_db
-DB_USER=your-cloud-db-user
-DB_PASS=your-cloud-db-password
-SCHOOL_CODE=4558
-ADMIN_PASSWORD=use-a-strong-password
-```
-
-7. Deploy the service.
-8. The Docker startup script automatically runs `php setup_db.php`, creating missing tables and seeding the first admin user if needed.
-9. Visit the Render URL and log in as `admin` using the `ADMIN_PASSWORD` value from the first successful deploy.
-
-## Production Notes
-
-- Keep `APP_DEBUG=false` in production.
-- Do not commit real passwords or database credentials.
-- The old local SQLite file is ignored and is not used by this MySQL version.
-- Direct browser access to setup and deployment files is blocked by `.htaccess`.
+## Github Repository Link
+**Repository:** [https://github.com/raphaelJ189/OpenSource_Assignment_CS2_Group06](https://github.com/raphaelJ189/OpenSource_Assignment_CS2_Group06)
