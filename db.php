@@ -3,8 +3,8 @@
 
 $host = '127.0.0.1';
 $db   = 'sims_db';
-$user = 'root';
-$pass = '';
+$user = 'srms_user';
+$pass = 'srms_pass';
 $charset = 'utf8mb4';
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
