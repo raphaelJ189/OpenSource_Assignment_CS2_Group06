@@ -13,7 +13,8 @@ SRMS is a PHP 8+ and MySQL student record management system for primary and seco
 The system is designed to manage student records in primary and secondary schools in Tanzania. It allows users (administrators/teachers) to:
 - Register new students into the system  
 - Display all registered student records  
-- Search for a student using a registration number  
+- Search for a student using a registration number
+
 
 ## Stack
 
@@ -22,6 +23,58 @@ The system is designed to manage student records in primary and secondary school
 - PDO prepared statements
 - HTML, CSS, vanilla JavaScript
 - Docker deployment support for Render
+
+  ## Project Structure
+
+```
+OpenSource_Assignment_CS2_Group06/
+├── admin/                      # Admin-specific pages
+│   ├── create_teacher.php      # Create new teacher accounts
+│   ├── dashboard.php           # Admin dashboard
+│   └── edit_teacher.php        # Edit teacher accounts
+├── css/                        # Stylesheets
+│   └── style.css               # Main stylesheet
+├── includes/                   # Shared PHP components
+│   ├── auth.php                # Authentication logic
+│   ├── footer.php              # Footer template
+│   └── header.php              # Header template
+├── db.php                      # Database connection configuration
+├── delete_student.php          # Delete student functionality
+├── docker-entrypoint.sh        # Docker startup script
+├── Dockerfile                  # Docker container configuration
+├── edit_student.php            # Edit student records
+├── index.php                   # Home/dashboard page
+├── keep-alive.php              # Keep-alive script for deployment
+├── login.php                   # User login page
+├── logout.php                  # User logout functionality
+├── Project_Report.md           # Project report documentation
+├── README.md                   # This file
+├── register_student.php        # Student registration page
+├── render.yaml                 # Render deployment configuration
+├── search.php                  # Student search functionality
+├── setup_db.php                # Database setup and seeding script
+└── students.php                # View all students
+```
+
+### File Descriptions
+
+| File/Folder | Purpose |
+|-------------|---------|
+| `admin/` | Contains admin-only pages for managing teachers and system administration |
+| `css/` | Contains stylesheet files for styling the application |
+| `includes/` | Shared PHP files included across multiple pages (auth, templates) |
+| `db.php` | Database connection and configuration |
+| `index.php` | Main application entry point and dashboard |
+| `login.php` | Authentication page for admin and teacher logins |
+| `register_student.php` | Form and logic for registering new students |
+| `search.php` | Search functionality for finding students |
+| `edit_student.php` | Edit existing student records |
+| `delete_student.php` | Delete student records |
+| `students.php` | Display list of all students |
+| `setup_db.php` | Initialize database tables and seed default admin user |
+| `Dockerfile` | Container configuration for Docker deployment |
+| `render.yaml` | Configuration for Render.com deployment |
+
 
 ## Local Setup With XAMPP
 
