@@ -15,7 +15,7 @@ try {
     $stmt = $pdo->query("SELECT * FROM users WHERE role = 'teacher' ORDER BY user_id DESC");
     $teachers = $stmt->fetchAll();
 } catch (PDOException $e) {
-    die("Database query error: " . $e->getMessage());
+    die("Database query error: " . database_error_message($e));
 }
 ?>
 

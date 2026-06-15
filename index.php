@@ -34,7 +34,7 @@ try {
     $recent_students = $pdo->query("SELECT * FROM students ORDER BY student_id DESC LIMIT 5")->fetchAll();
 
 } catch (PDOException $e) {
-    die("Error fetching dashboard statistics: " . $e->getMessage());
+    die("Error fetching dashboard statistics: " . database_error_message($e));
 }
 ?>
 

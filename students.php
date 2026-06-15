@@ -60,7 +60,7 @@ try {
     $grades = $pdo->query("SELECT DISTINCT class_grade FROM students ORDER BY class_grade ASC")->fetchAll(PDO::FETCH_COLUMN);
     $years = $pdo->query("SELECT DISTINCT enrolment_year FROM students ORDER BY enrolment_year DESC")->fetchAll(PDO::FETCH_COLUMN);
 } catch (PDOException $e) {
-    die("Database query error: " . $e->getMessage());
+    die("Database query error: " . database_error_message($e));
 }
 ?>
 
