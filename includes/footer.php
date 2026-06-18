@@ -225,5 +225,197 @@
             });
         })();
     </script>
+
+    <script>
+        (function() {
+            if (!window.SRMS) {
+                return;
+            }
+
+            const basePath = window.SRMS.basePath || './';
+            const warnAt = 15 * 60 * 1000;
+            const timeoutAt = 20 * 60 * 1000;
+            const storageKey = 'session-timeout-last-reset';
+
+            let warnTimeoutId = null;
+            let redirectTimeoutId = null;
+            let dialog = null;
+
+            const clearTimers = () => {
+                if (warnTimeoutId) {
+                    clearTimeout(warnTimeoutId);
+                    warnTimeoutId = null;
+                }
+
+                if (redirectTimeoutId) {
+                    clearTimeout(redirectTimeoutId);
+                    redirectTimeoutId = null;
+                }
+            };
+
+            const closeDialog = () => {
+                if (!dialog) {
+                    return;
+                }
+
+                if (typeof dialog.close === 'function') {
+                    dialog.close();
+                }
+
+                if (dialog.parentNode) {
+                    dialog.parentNode.removeChild(dialog);
+                }
+
+                dialog = null;
+            };
+
+            const updateLastActivity = () => {
+                try {
+                    localStorage.setItem(storageKey, Date.now().toString());
+                } catch (error) {
+                    // localStorage can be unavailable in restricted browser contexts.
+                }
+            };
+
+            const keepAlive = () => {
+                const timestamp = Math.floor(Date.now() / 1000);
+                return fetch(`${basePath}keep-alive.php?time=${timestamp}`, {
+                    method: 'GET',
+                    credentials: 'same-origin',
+                    cache: 'no-store'
+                }).catch(() => {});
+            };
+
+            const redirectToLogout = () => {
+                window.location.href = `${basePath}logout.php`;
+            };
+
+            const restartTimers = () => {
+                clearTimers();
+
+                warnTimeoutId = setTimeout(showDialog, warnAt);
+                redirectTimeoutId = setTimeout(() => {
+                    closeDialog();
+                    redirectToLogout();
+                }, timeoutAt);
+            };
+
+            const handleContinue = () => {
+                keepAlive();
+                closeDialog();
+                updateLastActivity();
+                restartTimers();
+            };
+
+            const handleLogout = () => {
+                closeDialog();
+                redirectToLogout();
+            };
+
+            function createDialog() {
+                const timeoutDialog = document.createElement('dialog');
+                timeoutDialog.className = 'session-timeout-dialog';
+                timeoutDialog.setAttribute('role', 'dialog');
+                timeoutDialog.setAttribute('aria-modal', 'true');
+                timeoutDialog.setAttribute('aria-labelledby', 'session-timeout-title');
+                timeoutDialog.innerHTML = `
+                    <div class="session-timeout-card">
+                        <div class="session-timeout-icon" aria-hidden="true">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        </div>
+                        <div class="session-timeout-copy">
+                            <h2 id="session-timeout-title">Session expiring soon</h2>
+                            <p>Your session will end soon because of inactivity. Choose Continue Session to stay signed in or Log Out to finish the session now.</p>
+                        </div>
+                        <div class="session-timeout-actions">
+                            <button type="button" class="btn btn-secondary" data-action="logout">Log Out</button>
+                            <button type="button" class="btn btn-danger" data-action="continue">Continue Session</button>
+                        </div>
+                    </div>
+                `;
+
+                const continueBtn = timeoutDialog.querySelector('[data-action="continue"]');
+                const logoutBtn = timeoutDialog.querySelector('[data-action="logout"]');
+
+                continueBtn.addEventListener('click', handleContinue);
+                logoutBtn.addEventListener('click', handleLogout);
+
+                timeoutDialog.addEventListener('cancel', (event) => {
+                    event.preventDefault();
+                    handleContinue();
+                });
+
+                return timeoutDialog;
+            }
+
+            function showDialog() {
+                if (!dialog) {
+                    dialog = createDialog();
+                    document.body.appendChild(dialog);
+                }
+
+                if (typeof dialog.showModal === 'function') {
+                    dialog.showModal();
+                } else {
+                    dialog.setAttribute('open', 'open');
+                }
+            }
+
+            const handleStorage = (event) => {
+                if (event.key !== storageKey || !event.newValue) {
+                    return;
+                }
+
+                const lastReset = parseInt(event.newValue, 10);
+                const elapsed = Date.now() - lastReset;
+
+                if (elapsed >= timeoutAt) {
+                    closeDialog();
+                    redirectToLogout();
+                } else if (elapsed >= warnAt) {
+                    closeDialog();
+                    showDialog();
+                } else {
+                    closeDialog();
+                    restartTimers();
+                }
+            };
+
+            const readLastActivity = () => {
+                try {
+                    return localStorage.getItem(storageKey);
+                } catch (error) {
+                    return null;
+                }
+            };
+
+            window.addEventListener('storage', handleStorage);
+
+            const storedLastActivity = readLastActivity();
+            if (storedLastActivity) {
+                const elapsed = Date.now() - parseInt(storedLastActivity, 10);
+
+                if (elapsed >= timeoutAt) {
+                    redirectToLogout();
+                } else if (elapsed >= warnAt) {
+                    showDialog();
+                    redirectTimeoutId = setTimeout(() => {
+                        closeDialog();
+                        redirectToLogout();
+                    }, Math.max(0, timeoutAt - elapsed));
+                } else {
+                    warnTimeoutId = setTimeout(showDialog, Math.max(0, warnAt - elapsed));
+                    redirectTimeoutId = setTimeout(() => {
+                        closeDialog();
+                        redirectToLogout();
+                    }, Math.max(0, timeoutAt - elapsed));
+                }
+            } else {
+                restartTimers();
+            }
+
+            updateLastActivity();
+        })();
+    </script>
 </body>
 </html>

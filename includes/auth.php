@@ -12,6 +12,27 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+if (!defined('SRMS_SESSION_WARNING_SECONDS')) {
+    define('SRMS_SESSION_WARNING_SECONDS', 15 * 60);
+}
+
+if (!defined('SRMS_SESSION_TIMEOUT_SECONDS')) {
+    define('SRMS_SESSION_TIMEOUT_SECONDS', 20 * 60);
+}
+
+function update_session_activity() {
+    $_SESSION['last_activity'] = time();
+}
+
+function redirect_to_login_with_error($message) {
+    session_unset();
+    session_destroy();
+    session_start();
+    $_SESSION['login_error'] = $message;
+    header("Location: login.php");
+    exit();
+}
+
 /**
  * Checks if user is authenticated and active, otherwise redirects to login page.
  */
@@ -19,6 +40,12 @@ function check_auth() {
     if (!isset($_SESSION['user_id'])) {
         header("Location: login.php");
         exit();
+    }
+
+    if (!isset($_SESSION['last_activity'])) {
+        update_session_activity();
+    } elseif ((time() - (int) $_SESSION['last_activity']) >= SRMS_SESSION_TIMEOUT_SECONDS) {
+        redirect_to_login_with_error('Your session has expired. Please sign in again.');
     }
 
     // BR-05: Verify the account is still active
@@ -31,17 +58,14 @@ function check_auth() {
             
             if (!$user || (int)$user['is_active'] !== 1) {
                 // Deactivated or deleted while logged in. Log them out.
-                session_unset();
-                session_destroy();
-                session_start();
-                $_SESSION['login_error'] = 'Your account has been deactivated or does not exist.';
-                header("Location: login.php");
-                exit();
+                redirect_to_login_with_error('Your account has been deactivated or does not exist.');
             }
         } catch (PDOException $e) {
             // If DB check fails, let the request continue but don't crash
         }
     }
+
+    update_session_activity();
 }
 
 /**

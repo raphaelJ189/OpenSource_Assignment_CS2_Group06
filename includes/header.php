@@ -83,6 +83,8 @@ if ($current_page === 'register_student.php') {
         // Apply saved theme early to prevent flash
         const savedTheme = localStorage.getItem('theme') || 'light';
         document.documentElement.setAttribute('data-theme', savedTheme);
+        window.SRMS = window.SRMS || {};
+        window.SRMS.basePath = <?php echo json_encode($base_path); ?>;
     </script>
 </head>
 <body>
